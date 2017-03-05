@@ -23,6 +23,8 @@ typedef vector<vii > vvii;
 #define rep(i,s,e) for(int i=(s);i<(e);++i)
 #define repr(i,s,e) for(int i=(e);i>(s);--i)
 
+const int INF = (int)(1e9);
+
 class Graph {
 private:
   int nodesCount;
@@ -47,15 +49,21 @@ public:
     cout<<"Graph details"<<endl;
     cout<<"Nodes: "<<nodesCount<<"\tEdges: "<<edgesCount<<endl;
     int idx = 1;
-    for(typeof(adj)::iterator it = adj.begin(); it != adj.end(); ++it) {
-      vector<int> v = (*it);
+    for(vector<vector<pair<int, int> > >::iterator it = adj.begin(); it != adj.end(); ++it) {
+      vector<pair<int, int> > v = (*it);
       cout<<idx<<": ";
-      for(v::iterator _it = v.begin(); _it != v.end(); ++_it) {
-        cout<<" "<<(*_it);
+      for(vector<pair<int, int> >::iterator _it = v.begin(); _it != v.end(); ++_it) {
+        cout<<" "<<(_it->first);
       }
       cout<<endl;
     }
   }
+  int getBetweennessWeight(int u, int v) {
+    return betweennessWeights[u][v];
+  }
+  void shortestPath(int source, vector<int> & paths, vector<int> & is_leaf);
+  int addWeights(int source, int node, vector<int> & paths, vector<int> & is_leaf);
+  int computeWeightedBetweennessCentrality(int v);
 };
 
 void Graph::shortestPath(int source, vector<int> & paths, vector<int> & is_leaf) {
@@ -67,7 +75,7 @@ void Graph::shortestPath(int source, vector<int> & paths, vector<int> & is_leaf)
   paths.clear();
   paths.reserve(nodesCount + 1);
 
-  pq.push_back(make_pair(0, source));
+  pq.push(make_pair(0, source));
   dist[source] = 0;
   paths[source] = source;
 
@@ -76,7 +84,7 @@ void Graph::shortestPath(int source, vector<int> & paths, vector<int> & is_leaf)
     int u = p.second;
     pq.pop();
     vector<pair<int, int> > u_neigh = adj[u];
-    for(u_neigh::iterator it = u_neigh.begin(); it != u_neigh.end(); ++it) {
+    for(vector<pair<int, int> >::iterator it = u_neigh.begin(); it != u_neigh.end(); ++it) {
       int v = (*it).first;
       int w = (*it).second;
 
@@ -94,12 +102,12 @@ int Graph::addWeights(int source, int node, vector<int> & paths, vector<int> & i
   vector<bool> visited(nodesCount + 1, false);
   int sum = 0;
   for(int i = 1; i <= is_leaf.size(); ++i) {
-    if(is_leaf(i)) {
+    if(is_leaf[i]) {
       int u = i;
       vector<int> dest;
       while(paths[u] != u) {
         if(u == node) {
-          for(dest::iterator it = dest.begin(); it != dest.end(); ++it) {
+          for(vector<int>::iterator it = dest.begin(); it != dest.end(); ++it) {
             sum += getBetweennessWeight(source, (*it));
           }
           break;
@@ -114,7 +122,6 @@ int Graph::addWeights(int source, int node, vector<int> & paths, vector<int> & i
 }
 
 int Graph::computeWeightedBetweennessCentrality(int v) {
-  int nodesCount = graph.nodesCount;
   vector<int> paths, is_leaf;
   int sum = 0;
   for(int i = 1; i <= nodesCount; ++i) {
@@ -122,4 +129,8 @@ int Graph::computeWeightedBetweennessCentrality(int v) {
     sum += addWeights(i, v, paths, is_leaf);
   }
   return sum;
+}
+
+int main() {
+  return 0;
 }
