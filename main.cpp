@@ -30,42 +30,74 @@ class Graph {
 private:
   int nodesCount;
   int edgesCount;
-  vector<int> nodes;
+  double totalBetweennessWeight;
+
+  // Container for adjacency list
+  // For every vertex 'u', adj[u] is a list of pairs (other vertex, weight)
   vector<vector<pair<int, int> > > adj;
-  vector<vector<int> > betweennessWeights;
+
+  // Container for prior weights between pairs of vertices
+  vector<vector<double> > betweennessWeights;
 
 public:
   Graph(int n) {
+    // Constructing the graph
     nodesCount = n;
-    nodes.resize(n+1);
     adj.resize(n+1);
-    betweennessWeights.resize(n+1);
     edgesCount = 0;
+
+    betweennessWeights.resize(n+1);
+    for(int i = 1; i <= n; ++i) {
+      betweennessWeights[i].resize(n+1);
+      for(int j = 1; j <= n; ++j) {
+        betweennessWeights[i][j] = 0.0;
+      }
+    }
+    totalBetweennessWeight = 0.0;
   }
   void addEdge(int a, int b, int w) {
     // Directed edge from a->b with a weight w
     adj[a].push_back(make_pair(b, w));
+
+    // Incrementing edgesCount
     ++edgesCount;
   }
-  void print() {
-    cout << "Graph info" << endl;
+  void summary() {
+    /**
+     * Utility function for summarising graph info
+     */
+    cout << "Graph summary" << endl;
     cout << "Nodes: " << nodesCount << "\tEdges: " << edgesCount << endl;
+    cout << "Connectivity" << endl;
+
     int idx = 1;
+
     for(vector<vector<pair<int, int> > >::iterator it = adj.begin() + 1; it != adj.end(); ++it) {
       vector<pair<int, int> > v = (*it);
-      cout<<idx<<": ";
+      cout<<idx<<":";
       for(vector<pair<int, int> >::iterator _it = v.begin(); _it != v.end(); ++_it) {
         cout << " " << (_it->first) << "," << (_it->second);
       }
       cout<<endl;
       ++idx;
     }
+
+    cout << "Betweenness prior" << endl;
+
+    for(vector<vector<double> >::iterator it = betweennessWeights.begin() + 1; it != betweennessWeights.end(); ++it) {
+      vector<double> v = (*it);
+      for(vector<double>::iterator _it = v.begin() + 1; _it != v.end(); ++_it) {
+        cout << (*_it) << " ";
+      }
+      cout << endl;
+    }
   }
-  int getBetweennessWeight(int u, int v) {
+  double getBetweennessWeight(int u, int v) {
     return betweennessWeights[u][v];
   }
-  void setBetweennessWeight(int u, int v, int w) {
-    if(!betweennessWeights[u].size()) betweennessWeights[u].resize(nodesCount + 1);
+  void setBetweennessWeight(int u, int v, double w) {
+    double del = w - betweennessWeights[u][v];
+    totalBetweennessWeight += del;
     betweennessWeights[u][v] = w;
   }
   void shortestPath(int source, vector<int> & paths, vector<int> & is_leaf);
@@ -135,7 +167,7 @@ double Graph::computeWeightedBetweennessCentrality(int v) {
     shortestPath(i, paths, is_leaf);
     sum += addWeights(i, v, paths, is_leaf);
   }
-  sum /= (nodesCount - 1)*(nodesCount - 2);
+  sum /= totalBetweennessWeight;
   return sum;
 }
 
@@ -152,12 +184,13 @@ int main() {
   for(int i = 1; i <= n; ++i) {
     graph.setBetweennessWeight(i, i, 0);
   }
+  double x;
   for(int i = 0; i < t; ++i) {
-    cin >> u >> v >> w;
-    graph.setBetweennessWeight(u, v, w);
-    graph.setBetweennessWeight(v, u, w);
+    cin >> u >> v >> x;
+    graph.setBetweennessWeight(u, v, x);
+    graph.setBetweennessWeight(v, u, x);
   }
-  graph.print();
+  graph.summary();
   cout << "Betweenness centrality: " << fixed << graph.computeWeightedBetweennessCentrality(g) << endl;
   return 0;
 }
