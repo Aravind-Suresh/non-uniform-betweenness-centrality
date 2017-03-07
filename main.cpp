@@ -23,13 +23,14 @@ typedef vector<vii > vvii;
 #define rep(i,s,e) for(int i=(s);i<(e);++i)
 #define repr(i,s,e) for(int i=(e);i>(s);--i)
 
-const int INF = (int)(1e9);
+const double INF = 1e9;
 
 // TODO: Assert in range ( 1, n )
 class Graph {
 private:
-  int nodesCount;
-  int edgesCount;
+  int nodesCount, edgesCount;
+  double totalBetweennessWeight;
+  bool isWeightedVar, isDirectedVar;
 
   // Container for adjacency list
   // For every vertex 'u', adj[u] is a list of pairs (other vertex, weight)
@@ -39,12 +40,17 @@ private:
   vector<vector<double> > betweennessWeights;
 
 public:
-  Graph(int n) {
+  Graph(int n, string type, string mode) {
     // Constructing the graph
     nodesCount = n;
     adj.resize(n+1);
     edgesCount = 0;
+    totalBetweennessWeight = 0.0;
 
+    isDirectedVar = (type == "directed");
+    isWeightedVar = (mode == "weighted");
+
+    // Initialising betweennessWeights
     betweennessWeights.resize(n+1);
     for(int i = 1; i <= n; ++i) {
       betweennessWeights[i].resize(n+1);
@@ -53,7 +59,26 @@ public:
       }
     }
   }
+  bool isDirected() {
+    /**
+     * Returns whether the graph is directed or not
+     */
+    return isDirectedVar;
+  }
+  bool isWeighted() {
+    /**
+     * Returns whether the graph is weighted or not
+     */
+    return isWeightedVar;
+  }
   void addEdge(int a, int b, int w) {
+    /**
+     * Utility function to add a directed edge from a->b with a weight w.
+     *
+     * Undirected graphs can be constructed by using 2 edges, i.e from a->b and from b->a.
+     *
+     * Unweighted graphs can be constructed by using a non-zero w ( say w = 1 ) for all edges.
+     */
     // Directed edge from a->b with a weight w
     adj[a].push_back(make_pair(b, w));
 
@@ -91,12 +116,23 @@ public:
     }
   }
   double getBetweennessWeight(int u, int v) {
+    /**
+     * Returns the "prior" betweenness weight of the vertex pair (u, v).
+     */
     return betweennessWeights[u][v];
   }
   void setBetweennessWeight(int u, int v, double w) {
+    /**
+     * Sets the betweennessWeight for the vertex pair (u, v) to the value w.
+     */
+    double del = w - betweennessWeights[u][v];
+    totalBetweennessWeight += del;
     betweennessWeights[u][v] = w;
   }
   double getBetweennessNorm(int v) {
+    /**
+     * Utility function to compute the normalisation factor for computing betweenness centrality.
+     */
     double sum = 0;
     for(int i = 1; i <= nodesCount; ++i) {
       if(i == v) continue;
@@ -107,14 +143,63 @@ public:
     }
     return sum;
   }
-  void shortestPath(int source, vector<vector<int> > & paths);
-  int addWeights(int source, int node, vector<vector<int> > & paths);
+  void shortestPathDijkstra(int source, vector<vector<int> > & paths);
+  void shortestPathBFS(int source, vector<vector<int> > & paths);
+  void addWeights(int source, int node, vector<vector<int> > & paths,
+    map<pair<int, int>, pair<int, int> > & count);
   double computeWeightedBetweennessCentrality(int v);
 };
 
-void Graph::shortestPath(int source, vector<vector<int> > & paths) {
-  priority_queue<pair<int, int> > pq;
+void Graph::shortestPathBFS(int source, vector<vector<int> > & paths) {
+  queue<int> Q;
   vector<int> dist(nodesCount + 1, INF);
+  vector<bool> visited(nodesCount + 1, false);
+  vector<vector<int> > prev(nodesCount + 1);
+
+  paths.clear();
+  paths.resize(nodesCount + 1);
+
+  Q.push(source);
+  dist[source] = 0;
+  visited[source] = true;
+  prev[source].push_back(source);
+
+  while(!Q.empty()) {
+    int u = Q.front();
+    Q.pop();
+    for(int i = 0; i < adj[u].size(); ++i) {
+      int v = adj[u][i].first;
+      if(!visited[v]) {
+        dist[v] = dist[u] + 1;
+
+        prev[v].clear();
+        prev[v].push_back(u);
+        visited[v] = true;
+
+        Q.push(v);
+      } else {
+        if(dist[v] == dist[u] + 1) prev[v].push_back(u);
+      }
+    }
+  }
+  for(int i = 1; i <= nodesCount; ++i) {
+    if(prev[i].size() == 1 && prev[i][0] == i) continue;
+    for(int j = 0; j < prev[i].size(); ++j) {
+      paths[prev[i][j]].push_back(i);
+    }
+  }
+  // for(int i = 1; i <= nodesCount; ++i) {
+  //   cout<<i<<":";
+  //   for(int j = 0; j < paths[i].size(); ++j) {
+  //     cout<<paths[i][j]<<" ";
+  //   }
+  //   cout<<endl;
+  // }
+}
+
+void Graph::shortestPathDijkstra(int source, vector<vector<int> > & paths) {
+  priority_queue<pair<int, int> > pq;
+  vector<double> dist(nodesCount + 1, INF);
   vector<vector<int> > prev(nodesCount + 1);
 
   paths.clear();
@@ -158,49 +243,56 @@ void Graph::shortestPath(int source, vector<vector<int> > & paths) {
   // }
 }
 
-int Graph::addWeights(int source, int node, vector<vector<int> > & paths) {
+void Graph::addWeights(int source, int node, vector<vector<int> > & paths,
+  map<pair<int, int>, pair<int, int> > & count) {
   vector<bool> visited(nodesCount + 1, false);
   int sum = 0, u = source;
-  vector<pair<double, int> > contribs(nodesCount + 1, make_pair(0.0, 0));
 
-  queue<pair<int, int> > Q;
-  Q.push(make_pair(source, 0));
-  visited[source] = true;
+  stack<pair<int, int> > S;
+  S.push(make_pair(source, 0));
 
-  while(!Q.empty()) {
-    pair<int, int> u = Q.front();
-    Q.pop();
-    int s = u.second;
-    if(s && u.first != node) {
-      contribs[u.first].first += getBetweennessWeight(source, u.first);
-      ++contribs[u.first].second;
+  while(!S.empty()) {
+    pair<int, int> p = S.top();
+    S.pop();
+    int u = p.first, s = p.second;
+    // cout<<u<<" "<<s<<endl;
+    if(u == node && u != source) {
+      s = 1;
     }
-    for(int i = 0; i < paths[u.first].size(); ++i) {
-      int v = paths[u.first][i];
-      if(v == node) s = 1;
-      else s = u.second;
-      if(!visited[v]) {
-        visited[v] = true;
-        Q.push(make_pair(v, s));
-      } else {
-        ++contribs[u.first].second;
-      }
+    if(s && u != node && u != source) {
+      ++count[make_pair(source, u)].first;
+      ++count[make_pair(source, u)].second;
+    } else if(u != source){
+      ++count[make_pair(source, u)].second;
+    }
+    for(int i = 0; i < paths[u].size(); ++i) {
+      int v = paths[u][i];
+      S.push(make_pair(v, s));
     }
   }
-  for(int i = 1; i <= nodesCount; ++i) {
-    // cout<<i<<" "<<contribs[i].first<<" "<<contribs[i].second<<endl;
-    if(contribs[i].second) sum += contribs[i].first/contribs[i].second;
-  }
-  // cout<<sum<<endl;
-  return sum;
 }
 
 double Graph::computeWeightedBetweennessCentrality(int v) {
   vector<vector<int> > paths;
-  double sum = 0;
+  map<pair<int, int>, pair<int, int> > count;
+
   for(int i = 1; i <= nodesCount; ++i) {
-    shortestPath(i, paths);
-    sum += addWeights(i, v, paths);
+    if(isWeighted()) shortestPathDijkstra(i, paths);
+    else shortestPathBFS(i, paths);
+    addWeights(i, v, paths, count);
+  }
+
+  double sum = 0.0, norm = 0.0;
+  for(map<pair<int, int>, pair<int, int> >::iterator it = count.begin(); it != count.end(); ++it) {
+    pair<int, int> p = it->first;
+    pair<int, int> q = it->second;
+    // cout<<"=="<<p.first<<" "<<p.second<<" "<<q.first<<" "<<q.second<<endl;
+    double x;
+    if(q.second) {
+      x = ((double)(q.first))/q.second;
+      x *= getBetweennessWeight(p.first, p.second);
+      sum += x;
+    }
   }
   sum /= getBetweennessNorm(v);
   return sum;
@@ -208,22 +300,28 @@ double Graph::computeWeightedBetweennessCentrality(int v) {
 
 int main() {
   int n, m, g;
-  cin >> n >> m >> g;
-  Graph graph(n);
+  string type, mode;
+  // type: directed or undirected
+  // mode: weighted or unweighted
+  cin >> type >> mode >> n >> m >> g;
+  Graph graph(n, type, mode);
   int u, v, w;
   for(int i = 0; i < m; ++i) {
-    cin >> u >> v >> w;
+    cin >> u >> v;
+
+    if(graph.isWeighted()) cin >> w;
+    else w = 1.0;
+
     graph.addEdge(u, v, w);
+    if(!graph.isDirected()) graph.addEdge(v, u, w);
   }
-  int t = n*(n-1)/2;
-  for(int i = 1; i <= n; ++i) {
-    graph.setBetweennessWeight(i, i, 0);
-  }
+
   double x;
-  for(int i = 0; i < t; ++i) {
-    cin >> u >> v >> x;
-    graph.setBetweennessWeight(u, v, x);
-    graph.setBetweennessWeight(v, u, x);
+  for(int i = 1; i <= n; ++i) {
+    for(int j = 1; j <=n; ++j) {
+      cin >> x;
+      graph.setBetweennessWeight(i, j, x);
+    }
   }
   graph.summary();
   cout << "Betweenness centrality ( node = " << g << " ): " << fixed << graph.computeWeightedBetweennessCentrality(g) << endl;
