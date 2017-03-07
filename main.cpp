@@ -30,7 +30,6 @@ class Graph {
 private:
   int nodesCount;
   int edgesCount;
-  double totalBetweennessWeight;
 
   // Container for adjacency list
   // For every vertex 'u', adj[u] is a list of pairs (other vertex, weight)
@@ -53,7 +52,6 @@ public:
         betweennessWeights[i][j] = 0.0;
       }
     }
-    totalBetweennessWeight = 0.0;
   }
   void addEdge(int a, int b, int w) {
     // Directed edge from a->b with a weight w
@@ -96,27 +94,35 @@ public:
     return betweennessWeights[u][v];
   }
   void setBetweennessWeight(int u, int v, double w) {
-    double del = w - betweennessWeights[u][v];
-    totalBetweennessWeight += del;
     betweennessWeights[u][v] = w;
   }
-  void shortestPath(int source, vector<int> & paths, vector<int> & is_leaf);
-  int addWeights(int source, int node, vector<int> & paths, vector<int> & is_leaf);
+  double getBetweennessNorm(int v) {
+    double sum = 0;
+    for(int i = 1; i <= nodesCount; ++i) {
+      if(i == v) continue;
+      for(int j = 1; j <= nodesCount; ++j) {
+        if(j == v) continue;
+        sum += getBetweennessWeight(i, j);
+      }
+    }
+    return sum;
+  }
+  void shortestPath(int source, vector<vector<int> > & paths);
+  int addWeights(int source, int node, vector<vector<int> > & paths);
   double computeWeightedBetweennessCentrality(int v);
 };
 
-void Graph::shortestPath(int source, vector<int> & paths, vector<int> & is_leaf) {
+void Graph::shortestPath(int source, vector<vector<int> > & paths) {
   priority_queue<pair<int, int> > pq;
   vector<int> dist(nodesCount + 1, INF);
-  is_leaf.clear();
-  is_leaf.resize(nodesCount + 1);
-  fill(is_leaf.begin(), is_leaf.end(), true);
+  vector<vector<int> > prev(nodesCount + 1);
+
   paths.clear();
   paths.resize(nodesCount + 1);
 
   pq.push(make_pair(0, source));
   dist[source] = 0;
-  paths[source] = source;
+  prev[source].push_back(source);
 
   while(!pq.empty()) {
     pair<int, int> p = pq.top();
@@ -129,45 +135,74 @@ void Graph::shortestPath(int source, vector<int> & paths, vector<int> & is_leaf)
 
       if(dist[v] > dist[u] + w) {
         dist[v] = dist[u] + w;
-        paths[v] = u;
-        is_leaf[u] = false;
+        prev[v].clear();
+        prev[v].push_back(u);
         pq.push(make_pair(dist[v], v));
+      } else if(dist[v] == dist[u] + w) {
+        prev[v].push_back(u);
       }
     }
   }
+  for(int i = 1; i <= nodesCount; ++i) {
+    if(prev[i].size() == 1 && prev[i][0] == i) continue;
+    for(int j = 0; j < prev[i].size(); ++j) {
+      paths[prev[i][j]].push_back(i);
+    }
+  }
+  // for(int i = 1; i <= nodesCount; ++i) {
+  //   cout<<i<<":";
+  //   for(int j = 0; j < paths[i].size(); ++j) {
+  //     cout<<paths[i][j]<<" ";
+  //   }
+  //   cout<<endl;
+  // }
 }
 
-int Graph::addWeights(int source, int node, vector<int> & paths, vector<int> & is_leaf) {
+int Graph::addWeights(int source, int node, vector<vector<int> > & paths) {
   vector<bool> visited(nodesCount + 1, false);
-  int sum = 0;
-  for(int i = 1; i <= is_leaf.size(); ++i) {
-    if(is_leaf[i]) {
-      int u = i;
-      vector<int> dest;
-      while(paths[u] != u) {
-        if(u == node) {
-          for(vector<int>::iterator it = dest.begin(); it != dest.end(); ++it) {
-            sum += getBetweennessWeight(source, (*it));
-          }
-          break;
-        } else {
-          dest.push_back(u);
-        }
-        u = paths[u];
+  int sum = 0, u = source;
+  vector<pair<double, int> > contribs(nodesCount + 1, make_pair(0.0, 0));
+
+  queue<pair<int, int> > Q;
+  Q.push(make_pair(source, 0));
+  visited[source] = true;
+
+  while(!Q.empty()) {
+    pair<int, int> u = Q.front();
+    Q.pop();
+    int s = u.second;
+    if(s && u.first != node) {
+      contribs[u.first].first += getBetweennessWeight(source, u.first);
+      ++contribs[u.first].second;
+    }
+    for(int i = 0; i < paths[u.first].size(); ++i) {
+      int v = paths[u.first][i];
+      if(v == node) s = 1;
+      else s = u.second;
+      if(!visited[v]) {
+        visited[v] = true;
+        Q.push(make_pair(v, s));
+      } else {
+        ++contribs[u.first].second;
       }
     }
   }
+  for(int i = 1; i <= nodesCount; ++i) {
+    // cout<<i<<" "<<contribs[i].first<<" "<<contribs[i].second<<endl;
+    if(contribs[i].second) sum += contribs[i].first/contribs[i].second;
+  }
+  // cout<<sum<<endl;
   return sum;
 }
 
 double Graph::computeWeightedBetweennessCentrality(int v) {
-  vector<int> paths, is_leaf;
+  vector<vector<int> > paths;
   double sum = 0;
   for(int i = 1; i <= nodesCount; ++i) {
-    shortestPath(i, paths, is_leaf);
-    sum += addWeights(i, v, paths, is_leaf);
+    shortestPath(i, paths);
+    sum += addWeights(i, v, paths);
   }
-  sum /= totalBetweennessWeight;
+  sum /= getBetweennessNorm(v);
   return sum;
 }
 
@@ -191,6 +226,6 @@ int main() {
     graph.setBetweennessWeight(v, u, x);
   }
   graph.summary();
-  cout << "Betweenness centrality: " << fixed << graph.computeWeightedBetweennessCentrality(g) << endl;
+  cout << "Betweenness centrality ( node = " << g << " ): " << fixed << graph.computeWeightedBetweennessCentrality(g) << endl;
   return 0;
 }
