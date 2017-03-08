@@ -82,34 +82,37 @@ void Graph::addEdge(int a, int b, double w) {
   ++edgesCount;
 }
 
-void Graph::summary() {
+void Graph::summary(bool short_summary = false) {
   /**
    * Utility function for summarising graph info
    */
   cout << "Graph summary" << endl;
   cout << "Nodes: " << nodesCount << "\tEdges: " << edgesCount << endl;
-  cout << "Connectivity" << endl;
 
-  int idx = 1;
+  if(!short_summary) {
+    cout << "Connectivity" << endl;
 
-  for(vector<vector<pair<int, double> > >::iterator it = adj.begin() + 1; it != adj.end(); ++it) {
-    vector<pair<int, double> > v = (*it);
-    cout<<idx<<":";
-    for(vector<pair<int, double> >::iterator _it = v.begin(); _it != v.end(); ++_it) {
-      cout << " " << (_it->first) << "," << (_it->second);
+    int idx = 1;
+
+    for(vector<vector<pair<int, double> > >::iterator it = adj.begin() + 1; it != adj.end(); ++it) {
+      vector<pair<int, double> > v = (*it);
+      cout<<idx<<":";
+      for(vector<pair<int, double> >::iterator _it = v.begin(); _it != v.end(); ++_it) {
+        cout << " " << (_it->first) << "," << (_it->second);
+      }
+      cout<<endl;
+      ++idx;
     }
-    cout<<endl;
-    ++idx;
-  }
 
-  cout << "Betweenness prior" << endl;
+    cout << "Betweenness prior" << endl;
 
-  for(vector<vector<double> >::iterator it = betweennessWeights.begin() + 1; it != betweennessWeights.end(); ++it) {
-    vector<double> v = (*it);
-    for(vector<double>::iterator _it = v.begin() + 1; _it != v.end(); ++_it) {
-      cout << (*_it) << " ";
+    for(vector<vector<double> >::iterator it = betweennessWeights.begin() + 1; it != betweennessWeights.end(); ++it) {
+      vector<double> v = (*it);
+      for(vector<double>::iterator _it = v.begin() + 1; _it != v.end(); ++_it) {
+        cout << (*_it) << " ";
+      }
+      cout << endl;
     }
-    cout << endl;
   }
 }
 

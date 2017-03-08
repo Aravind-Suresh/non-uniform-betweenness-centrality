@@ -35,7 +35,7 @@ public:
 
   void addEdge(int a, int b, double w);
 
-  void summary();
+  void summary(bool short_summary);
 
   double getBetweennessWeight(int u, int v);
 

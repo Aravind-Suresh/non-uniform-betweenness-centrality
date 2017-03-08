@@ -8,6 +8,7 @@
 */
 
 #include <bits/stdc++.h>
+#include <ctime>
 #include "util.h"
 
 using namespace std;
@@ -30,13 +31,17 @@ typedef vector<vii > vvii;
 const double INF = 1e9;
 
 int main() {
+
+  int startTime = clock();
+
   int n, m, g;
   string type, mode;
   // type: directed or undirected
   // mode: weighted or unweighted
   cin >> type >> mode >> n >> m >> g;
   Graph graph(n, type, mode);
-  int u, v, w;
+  int u, v;
+  double w;
   for(int i = 0; i < m; ++i) {
     cin >> u >> v;
 
@@ -55,7 +60,11 @@ int main() {
     }
   }
   // Printing graph summary
-  graph.summary();
+  graph.summary(true);
   cout << "Betweenness centrality ( node = " << g << " ): " << fixed << graph.computeWeightedBetweennessCentrality(g) << endl;
+
+  int endTime = clock();
+  cout << "Execution time: " << 1000*(endTime - startTime)/((double) CLOCKS_PER_SEC) << " ms" << endl;
+
   return 0;
 }
