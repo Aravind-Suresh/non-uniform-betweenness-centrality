@@ -24,8 +24,8 @@ for i in range(len(y)):
 # print t[700]*10.0/c[700]
 # print y_plot
 
-plt.xlabel("Edges | Number of vertices = 500")
-# plt.xlabel("Vertices")
+# plt.xlabel("Edges | Number of vertices = 500")
+plt.xlabel("Vertices")
 plt.ylabel("Execution time ( s )")
 
 plt.plot(x,y_plot,'ro')

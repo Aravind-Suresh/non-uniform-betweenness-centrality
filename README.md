@@ -33,6 +33,12 @@ $ ./tests/test-large.sh
 ```
 
 ## Plots
+* Variation of execution time with number of vertices ( ~ parabolic )
+
+![](plots/plot-exec-time-large-input.png)
+* Variation of execution time with number of edges, for a fixed number of vertices ( ~ linear )
+
+![](plots/plot-exec-time-different-edges.png)
 
 
 ## References
