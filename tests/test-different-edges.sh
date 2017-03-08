@@ -1,0 +1,10 @@
+python graph-generator.py directed weighted 500 500 | ./bin/main
+python graph-generator.py directed weighted 500 1000 | ./bin/main
+python graph-generator.py directed weighted 500 1500 | ./bin/main
+python graph-generator.py directed weighted 500 2000 | ./bin/main
+python graph-generator.py directed weighted 500 2500 | ./bin/main
+python graph-generator.py directed weighted 500 3000 | ./bin/main
+python graph-generator.py directed weighted 500 4000 | ./bin/main
+python graph-generator.py directed weighted 500 5000 | ./bin/main
+python graph-generator.py directed weighted 500 6000 | ./bin/main
+python graph-generator.py directed weighted 500 7000 | ./bin/main

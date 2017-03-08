@@ -9,8 +9,8 @@ is_weighted = ( mode == "weighted" )
 
 n = eval(sys.argv[3])
 m = eval(sys.argv[4])
-k = eval(sys.argv[5])
 
+deg = np.zeros(n+1)
 edges = []
 
 while True:
@@ -26,11 +26,15 @@ while True:
 
     if a == b or ( not is_directed and t in edges ):
         continue
+    deg[a] = deg[a] + 1
+    deg[b] = deg[b] + 1
     edges.append(t)
 
     if len(edges) == m:
         break
 
+# print deg
+k = np.argmax(deg)
 betweenness_prior = np.random.random((n, n))
 
 def print_graph_test_input():
