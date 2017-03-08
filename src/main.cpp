@@ -32,7 +32,7 @@ const double INF = 1e9;
 
 int main() {
 
-  int startTime = clock();
+  long long int startTime = clock();
 
   int n, m, g;
   string type, mode;
@@ -63,7 +63,7 @@ int main() {
   graph.summary(true);
   cout << "Betweenness centrality ( node = " << g << " ): " << fixed << graph.computeWeightedBetweennessCentrality(g) << endl;
 
-  int endTime = clock();
+  long long int endTime = clock();
   cout << "Execution time: " << 1000*(endTime - startTime)/((double) CLOCKS_PER_SEC) << " ms" << endl;
 
   return 0;
