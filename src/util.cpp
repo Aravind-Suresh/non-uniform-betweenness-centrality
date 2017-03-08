@@ -2,12 +2,14 @@
 * @Author:              aravind
 * @Email:               arvindsuresh2009@gmail.com
 * @Github:              [Aravind-Suresh](https://github.com/Aravind-Suresh)
-* @Date:                2017-03-05T16:45:13+05:30
+* @Date:                2017-03-08T12:33:07+05:30
 * @Last modified by:    aravind
-* @Last modified time:  2017-03-08T12:28:58+05:30
+* @Last modified time:  2017-03-08T12:33:07+05:30
 */
 
 #include <bits/stdc++.h>
+#include "util.h"
+
 using namespace std;
 
 typedef long long ll;
@@ -27,121 +29,89 @@ typedef vector<vii > vvii;
 
 const double INF = 1e9;
 
-class Graph {
+Graph::Graph(int n, string type, string mode) {
+  // Constructing the graph
+  nodesCount = n;
+  adj.resize(n+1);
+  edgesCount = 0;
+  totalBetweennessWeight = 0.0;
 
-private:
-  int nodesCount, edgesCount;
-  double totalBetweennessWeight;
-  bool isWeightedVar, isDirectedVar;
+  isDirectedVar = (type == "directed");
+  isWeightedVar = (mode == "weighted");
 
-  // Container for adjacency list
-  // For every vertex 'u', adj[u] is a list of pairs (other vertex, weight)
-  vector<vector<pair<int, int> > > adj;
-
-  // Container for prior weights between pairs of vertices
-  vector<vector<double> > betweennessWeights;
-
-public:
-
-  Graph(int n, string type, string mode) {
-    // Constructing the graph
-    nodesCount = n;
-    adj.resize(n+1);
-    edgesCount = 0;
-    totalBetweennessWeight = 0.0;
-
-    isDirectedVar = (type == "directed");
-    isWeightedVar = (mode == "weighted");
-
-    // Initialising betweennessWeights
-    betweennessWeights.resize(n+1);
-    for(int i = 1; i <= n; ++i) {
-      betweennessWeights[i].resize(n+1);
-      for(int j = 1; j <= n; ++j) {
-        betweennessWeights[i][j] = 0.0;
-      }
+  // Initialising betweennessWeights
+  betweennessWeights.resize(n+1);
+  for(int i = 1; i <= n; ++i) {
+    betweennessWeights[i].resize(n+1);
+    for(int j = 1; j <= n; ++j) {
+      betweennessWeights[i][j] = 0.0;
     }
   }
+}
 
-  bool isDirected() {
-    /**
-     * Returns whether the graph is directed or not
-     */
-    return isDirectedVar;
-  }
+bool Graph::isDirected() {
+  /**
+   * Returns whether the graph is directed or not
+   */
+  return isDirectedVar;
+}
 
-  bool isWeighted() {
-    /**
-     * Returns whether the graph is weighted or not
-     */
-    return isWeightedVar;
-  }
+bool Graph::isWeighted() {
+  /**
+   * Returns whether the graph is weighted or not
+   */
+  return isWeightedVar;
+}
 
-  void addEdge(int a, int b, int w) {
-    /**
-     * Utility function to add a directed edge from a->b with a weight w.
-     *
-     * Undirected graphs can be constructed by using 2 edges, i.e from a->b and from b->a.
-     *
-     * Unweighted graphs can be constructed by using a non-zero w ( say w = 1 ) for all edges.
-     *
-     * :param a   Edge from 'a'
-     * :param b   Edge to 'b'
-     * :param w   Weight of the edge
-     */
-    // Directed edge from a->b with a weight w
-    adj[a].push_back(make_pair(b, w));
+void Graph::addEdge(int a, int b, int w) {
+  /**
+   * Utility function to add a directed edge from a->b with a weight w.
+   *
+   * Undirected graphs can be constructed by using 2 edges, i.e from a->b and from b->a.
+   *
+   * Unweighted graphs can be constructed by using a non-zero w ( say w = 1 ) for all edges.
+   *
+   * :param a   Edge from 'a'
+   * :param b   Edge to 'b'
+   * :param w   Weight of the edge
+   */
+  // Directed edge from a->b with a weight w
+  adj[a].push_back(make_pair(b, w));
 
-    // Incrementing edgesCount
-    ++edgesCount;
-  }
+  // Incrementing edgesCount
+  ++edgesCount;
+}
 
-  void summary() {
-    /**
-     * Utility function for summarising graph info
-     */
-    cout << "Graph summary" << endl;
-    cout << "Nodes: " << nodesCount << "\tEdges: " << edgesCount << endl;
-    cout << "Connectivity" << endl;
+void Graph::summary() {
+  /**
+   * Utility function for summarising graph info
+   */
+  cout << "Graph summary" << endl;
+  cout << "Nodes: " << nodesCount << "\tEdges: " << edgesCount << endl;
+  cout << "Connectivity" << endl;
 
-    int idx = 1;
+  int idx = 1;
 
-    for(vector<vector<pair<int, int> > >::iterator it = adj.begin() + 1; it != adj.end(); ++it) {
-      vector<pair<int, int> > v = (*it);
-      cout<<idx<<":";
-      for(vector<pair<int, int> >::iterator _it = v.begin(); _it != v.end(); ++_it) {
-        cout << " " << (_it->first) << "," << (_it->second);
-      }
-      cout<<endl;
-      ++idx;
+  for(vector<vector<pair<int, int> > >::iterator it = adj.begin() + 1; it != adj.end(); ++it) {
+    vector<pair<int, int> > v = (*it);
+    cout<<idx<<":";
+    for(vector<pair<int, int> >::iterator _it = v.begin(); _it != v.end(); ++_it) {
+      cout << " " << (_it->first) << "," << (_it->second);
     }
-
-    cout << "Betweenness prior" << endl;
-
-    for(vector<vector<double> >::iterator it = betweennessWeights.begin() + 1; it != betweennessWeights.end(); ++it) {
-      vector<double> v = (*it);
-      for(vector<double>::iterator _it = v.begin() + 1; _it != v.end(); ++_it) {
-        cout << (*_it) << " ";
-      }
-      cout << endl;
-    }
+    cout<<endl;
+    ++idx;
   }
 
-  double getBetweennessWeight(int u, int v);
+  cout << "Betweenness prior" << endl;
 
-  void setBetweennessWeight(int u, int v, double w);
-
-  double getBetweennessNorm(int v);
-
-  void shortestPathDijkstra(int source, vector<vector<int> > & paths);
-
-  void shortestPathBFS(int source, vector<vector<int> > & paths);
-
-  void countShortestPathContribs(int source, int node, vector<vector<int> > & paths,
-    map<pair<int, int>, pair<int, int> > & count);
-
-  double computeWeightedBetweennessCentrality(int node);
-};
+  for(vector<vector<double> >::iterator it = betweennessWeights.begin() + 1; it != betweennessWeights.end(); ++it) {
+    vector<double> v = (*it);
+    for(vector<double>::iterator _it = v.begin() + 1; _it != v.end(); ++_it) {
+      cout << (*_it) << " ";
+    }
+    cout << endl;
+  }
+}
 
 double Graph::getBetweennessWeight(int u, int v) {
   /**
@@ -354,35 +324,4 @@ double Graph::computeWeightedBetweennessCentrality(int node) {
   // Normalizing betweenness centrality
   sum /= getBetweennessNorm(node);
   return sum;
-}
-
-int main() {
-  int n, m, g;
-  string type, mode;
-  // type: directed or undirected
-  // mode: weighted or unweighted
-  cin >> type >> mode >> n >> m >> g;
-  Graph graph(n, type, mode);
-  int u, v, w;
-  for(int i = 0; i < m; ++i) {
-    cin >> u >> v;
-
-    if(graph.isWeighted()) cin >> w;
-    else w = 1.0;
-
-    graph.addEdge(u, v, w);
-    if(!graph.isDirected()) graph.addEdge(v, u, w);
-  }
-
-  double x;
-  for(int i = 1; i <= n; ++i) {
-    for(int j = 1; j <=n; ++j) {
-      cin >> x;
-      graph.setBetweennessWeight(i, j, x);
-    }
-  }
-  // Printing graph summary
-  graph.summary();
-  cout << "Betweenness centrality ( node = " << g << " ): " << fixed << graph.computeWeightedBetweennessCentrality(g) << endl;
-  return 0;
 }
