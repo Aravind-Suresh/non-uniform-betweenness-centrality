@@ -63,7 +63,7 @@ bool Graph::isWeighted() {
   return isWeightedVar;
 }
 
-void Graph::addEdge(int a, int b, int w) {
+void Graph::addEdge(int a, int b, double w) {
   /**
    * Utility function to add a directed edge from a->b with a weight w.
    *
@@ -92,10 +92,10 @@ void Graph::summary() {
 
   int idx = 1;
 
-  for(vector<vector<pair<int, int> > >::iterator it = adj.begin() + 1; it != adj.end(); ++it) {
-    vector<pair<int, int> > v = (*it);
+  for(vector<vector<pair<int, double> > >::iterator it = adj.begin() + 1; it != adj.end(); ++it) {
+    vector<pair<int, double> > v = (*it);
     cout<<idx<<":";
-    for(vector<pair<int, int> >::iterator _it = v.begin(); _it != v.end(); ++_it) {
+    for(vector<pair<int, double> >::iterator _it = v.begin(); _it != v.end(); ++_it) {
       cout << " " << (_it->first) << "," << (_it->second);
     }
     cout<<endl;
@@ -206,25 +206,25 @@ void Graph::shortestPathDijkstra(int source, vector<vector<int> > & paths) {
    * :param source  The source vertex
    * :param paths   Adjacency list representation of the shortest-path tree
    */
-  priority_queue<pair<int, int> > pq;
+  priority_queue<pair<double, int> > pq;
   vector<double> dist(nodesCount + 1, INF);
   vector<vector<int> > prev(nodesCount + 1);
 
   paths.clear();
   paths.resize(nodesCount + 1);
 
-  pq.push(make_pair(0, source));
+  pq.push(make_pair(0.0, source));
   dist[source] = 0;
   prev[source].push_back(source);
 
   while(!pq.empty()) {
-    pair<int, int> p = pq.top();
+    pair<double, int> p = pq.top();
     int u = p.second;
     pq.pop();
-    vector<pair<int, int> > u_neigh = adj[u];
-    for(vector<pair<int, int> >::iterator it = u_neigh.begin(); it != u_neigh.end(); ++it) {
+    vector<pair<int, double> > u_neigh = adj[u];
+    for(vector<pair<int, double> >::iterator it = u_neigh.begin(); it != u_neigh.end(); ++it) {
       int v = (*it).first;
-      int w = (*it).second;
+      double w = (*it).second;
 
       if(dist[v] > dist[u] + w) {
         dist[v] = dist[u] + w;

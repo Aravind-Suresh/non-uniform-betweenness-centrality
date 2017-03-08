@@ -20,7 +20,7 @@ private:
 
   // Container for adjacency list
   // For every vertex 'u', adj[u] is a list of pairs (other vertex, weight)
-  vector<vector<pair<int, int> > > adj;
+  vector<vector<pair<int, double> > > adj;
 
   // Container for prior weights between pairs of vertices
   vector<vector<double> > betweennessWeights;
@@ -33,7 +33,7 @@ public:
 
   bool isWeighted();
 
-  void addEdge(int a, int b, int w);
+  void addEdge(int a, int b, double w);
 
   void summary();
 
