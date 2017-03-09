@@ -19,12 +19,13 @@ for i in range(len(y)):
 y_plot = []
 for i in range(len(y)):
     xx = x[i]
-    y_plot.append(t[xx]*14.711*10/c[xx])
+    # y_plot.append(t[xx]*0.0001/c[xx])
+    y_plot.append(t[xx]*14.711*0.6*0.5*10/c[xx])
 
 # print t[700]*10.0/c[700]
 # print y_plot
 
-# plt.xlabel("Edges | Number of vertices = 500")
+# plt.xlabel("Edges | Number of vertices = 1000")
 plt.xlabel("Vertices")
 plt.ylabel("Execution time ( s )")
 
