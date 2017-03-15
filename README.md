@@ -32,6 +32,10 @@ To run tests for large graphs,
 ```
 $ ./tests/test-large.sh
 ```
+To run tests for graphs with varied number of edges ( for a fixed number of vertices ).
+```
+$ ./tests/test-different-edges.sh
+```
 
 ## Plots
 * Variation of execution time with number of vertices ( ~ parabolic )
