@@ -21,7 +21,8 @@ for i in range(len(y)):
     xx = x[i]
     y_plot.append(t[xx]*0.0001*25/c[xx])
     # y_plot.append(t[xx]*14.711*0.6*0.5*10*16/c[xx])
-
+print x
+print y_plot
 # print t[700]*10.0/c[700]
 # print y_plot
 
